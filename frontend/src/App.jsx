@@ -172,7 +172,7 @@ export default function App() {
     ]).then(([dishResult, favResult]) => {
       if (dishResult.status === "fulfilled" && dishResult.value?.length) {
         setDishes(dishResult.value.map(normalizeDish));
-        setStatus("Connected to Server more recipes to choose");
+        setStatus("Connected");
       }
       if (favResult.status === "fulfilled" && favResult.value?.length) {
         setFavorites(favResult.value.map(normalizeDish));
@@ -280,7 +280,7 @@ export default function App() {
       <section className="hero">
         <div>
           <p className="eyebrow">Mommy JM Menu Picker</p>
-          <h1>Randomly or Pick the Menu you want to Cook.</h1>
+          <h1>Randomly or Pick the Menu you want to Cook</h1>
           {/* <p className="subtitle">Mobile-friendly recipe cards with favorites and optional PostgreSQL API sync.</p> */}
         </div>
         <div className="status-pill">{status}</div>
