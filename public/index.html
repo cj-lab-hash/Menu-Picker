@@ -1,0 +1,139 @@
+
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+// Expanded local dishes (fallback ~15; DB can store 100+)
+const localDishes = [
+  { name: "Adobo", image: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Chicken_adobo.jpg",
+    ingredients: ["Chicken/Pork","Soy Sauce","Vinegar","Garlic","Bay Leaves"],
+    steps: ["Marinate meat","Add vinegar","Simmer","Serve"] },
+  { name: "Sinigang", image: "https://upload.wikimedia.org/wikipedia/commons/5/5b/Sinigang_na_baboy.jpg",
+    ingredients: ["Pork","Tamarind","Tomato","Kangkong"],
+    steps: ["Boil base","Cook pork","Add veggies","Serve"] },
+  { name: "Lechon Kawali", image: "https://upload.wikimedia.org/wikipedia/commons/3/3c/Lechon_Kawali.jpg",
+    ingredients: ["Pork Belly","Salt","Oil"],
+    steps: ["Boil pork","Dry","Deep fry","Serve"] },
+  { name: "Kare-Kare", image: "https://upload.wikimedia.org/wikipedia/commons/1/1d/Kare-kare.jpg",
+    ingredients: ["Oxtail","Peanut Sauce","Vegetables"],
+    steps: ["Boil meat","Prepare sauce","Combine"] },
+  { name: "Tinola", image: "https://upload.wikimedia.org/wikipedia/commons/6/6a/Tinola.jpg",
+    ingredients: ["Chicken","Ginger","Papaya","Malunggay"],
+    steps: ["Saute ginger","Add chicken","Simmer"] },
+  { name: "Bistek", image: "https://upload.wikimedia.org/wikipedia/commons/f/f3/Bistek_Tagalog.jpg",
+    ingredients: ["Beef","Soy","Calamansi","Onion"],
+    steps: ["Marinate","Fry","Add sauce"] },
+  { name: "Laing", image: "https://upload.wikimedia.org/wikipedia/commons/6/66/Laing.jpg",
+    ingredients: ["Taro leaves","Coconut milk","Chili"],
+    steps: ["Simmer milk","Add leaves","Cook"] },
+  { name: "Bulalo", image: "https://upload.wikimedia.org/wikipedia/commons/8/87/Bulalo.jpg",
+    ingredients: ["Beef shank","Corn","Cabbage"],
+    steps: ["Slow cook","Add corn","Add veggies"] },
+  { name: "Sisig", image: "https://upload.wikimedia.org/wikipedia/commons/1/1c/Pork_sisig.jpg",
+    ingredients: ["Pork","Onion","Chili"],
+    steps: ["Grill","Chop","Mix"] },
+  { name: "Pancit Canton", image: "https://upload.wikimedia.org/wikipedia/commons/4/4b/Pancit_Canton.jpg",
+    ingredients: ["Noodles","Chicken","Veggies"],
+    steps: ["Saute","Add noodles","Mix"] }
+];
+
+export default function App() {
+  const [dishes, setDishes] = useState(localDishes);
+  const [index, setIndex] = useState(0);
+  const [favorites, setFavorites] = useState([]);
+
+  const dish = dishes[index];
+  // Load favorites (local + backend optional)
+  useEffect(() => {
+    const saved = localStorage.getItem("favorites");
+    if (saved) setFavorites(JSON.parse(saved));
+
+
+    fetch("/api/dishes").then(r => r.json()).then(d => d?.length && setDishes(d)).catch(()=>{});
+    fetch("/api/favorites").then(r => r.json()).then(d => d?.length && setFavorites(d)).catch(()=>{});
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("favorites", JSON.stringify(favorites));
+  }, [favorites]);
+
+  // Swipe (mobile style)
+  const next = () => setIndex((index + 1) % dishes.length);
+  const prev = () => setIndex((index - 1 + dishes.length) % dishes.length);
+  let startX = 0;
+  const touchStart = e => startX = e.touches[0].clientX;
+  const touchEnd = e => {
+    const diff = e.changedTouches[0].clientX - startX;
+    if (diff > 50) prev();
+    if (diff < -50) next();
+  };
+
+  const addFavorite = () => {
+    if (favorites.find(f => f.name === dish.name)) return;
+    setFavorites([...favorites, dish]);
+    fetch("/api/favorites", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(dish)});
+  };
+
+  const removeFavorite = (name) => {
+    setFavorites(favorites.filter(f => f.name !== name));
+    fetch(`/api/favorites/${name}`, {method:"DELETE"});
+  };
+
+  return (
+    <div className="flex flex-col items-center min-h-screen bg-gray-100 p-4 gap-6">
+
+      {/* Swipe Card */}
+      <div className="max-w-md w-full" onTouchStart={touchStart} onTouchEnd={touchEnd}>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <h1 className="text-xl font-bold">🍽 Swipe Recipes</h1>
+            <h2 className="text-lg mt-2 font-semibold">{dish.name}</h2>
+            {dish.image && <img src={dish.image} className="mt-2 rounded-xl h-52 w-full object-cover" />}
+            <Button onClick={addFavorite} className="mt-2">❤️ Save</Button>
+
+
+            <div className="text-left mt-3">
+              <b>Ingredients:</b>
+              <ul className="list-disc ml-5 text-sm">
+                {dish.ingredients.map((i,idx)=><li key={idx}>{i}</li>)}
+              </ul>
+            </div>
+
+
+            <div className="text-left mt-2">
+              <b>Steps:</b>
+              <ol className="list-decimal ml-5 text-sm">
+                {dish.steps.map((s,idx)=><li key={idx}>{s}</li>)}
+              </ol>
+            </div>
+
+
+            <div className="flex gap-2 mt-3 justify-center">
+              <Button onClick={prev}>⬅</Button>
+              <Button onClick={next}>➡</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Favorites */}
+      <div className="max-w-md w-full">
+        <Card>
+          <CardContent className="p-4">
+            <h2 className="font-bold">❤️ Favorites</h2>
+            {favorites.map((f,i)=> (
+              <div key={i} className="border-b py-2 cursor-pointer" onClick={()=>setIndex(dishes.findIndex(d=>d.name===f.name))}>
+                <div className="flex justify-between">
+                  <span>{f.name}</span>
+                  <Button onClick={()=>removeFavorite(f.name)}>Remove</Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+
+
+    </div>
+  );
+}
