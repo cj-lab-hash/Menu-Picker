@@ -172,7 +172,7 @@ export default function App() {
     ]).then(([dishResult, favResult]) => {
       if (dishResult.status === "fulfilled" && dishResult.value?.length) {
         setDishes(dishResult.value.map(normalizeDish));
-        setStatus("Connected to PostgreSQL API");
+        setStatus("Connected to Server more recipes to choose");
       }
       if (favResult.status === "fulfilled" && favResult.value?.length) {
         setFavorites(favResult.value.map(normalizeDish));
@@ -279,9 +279,9 @@ export default function App() {
     <main className="app-shell">
       <section className="hero">
         <div>
-          <p className="eyebrow">Filipino Menu Picker</p>
-          <h1>Swipe, save, and cook your next Filipino dish.</h1>
-          <p className="subtitle">Mobile-friendly recipe cards with favorites and optional PostgreSQL API sync.</p>
+          <p className="eyebrow">Mommy JM Menu Picker</p>
+          <h1>Randomly or Pick the Menu you want to Cook.</h1>
+          {/* <p className="subtitle">Mobile-friendly recipe cards with favorites and optional PostgreSQL API sync.</p> */}
         </div>
         <div className="status-pill">{status}</div>
       </section>
