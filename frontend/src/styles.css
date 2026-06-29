@@ -118,6 +118,26 @@ button:disabled { cursor: not-allowed; opacity: 0.75; }
   justify-content: space-between;
   gap: 12px;
 }
+.image-wrap {
+  position: relative;
+  background: #f3f4f6;
+}
+
+.image-skeleton {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(90deg, #f3f4f6, #fff7ed, #f3f4f6);
+  color: #6b7280;
+  font-weight: 800;
+  z-index: 1;
+}
+
+.image-wrap img {
+  position: relative;
+  z-index: 2;
+}
 
 .image-overlay span {
   color: white;

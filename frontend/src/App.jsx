@@ -152,6 +152,23 @@ function normalizeDish(dish) {
     steps: Array.isArray(dish.steps) ? dish.steps : String(dish.steps || "").split("\n").filter(Boolean),
   };
 }
+useEffect(() => {
+  if (!filteredDishes.length) return;
+
+  const nextIndex = (index + 1) % filteredDishes.length;
+  const nextImage = filteredDishes[nextIndex]?.image;
+
+  if (nextImage) {
+    const img = new Image();
+    img.src = nextImage;
+  }
+}, [index, filteredDishes]);
+
+const [imageLoaded, setImageLoaded] = useState(false);
+
+useEffect(() => {
+  setImageLoaded(false);
+}, [currentDish?.image]);
 
 export default function App() {
   const [dishes, setDishes] = useState(fallbackDishes);
@@ -300,11 +317,21 @@ export default function App() {
       <section className="layout">
         <article className="recipe-card" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
           <div className="image-wrap">
+          {!imageLoaded && (
+            <div className="image-skeleton">
+              Loading image...
+              </div>
+          )}
             <img
               src={currentDish.image}
               alt={currentDish.name}
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
               onError={(event) => { event.currentTarget.src = "https://placehold.co/900x600/f3f4f6/111827?text=Filipino+Dish"; }}
+          
             />
+
             <div className="image-overlay">
               <span>{currentDish.category}</span>
               <span>{index + 1} / {filteredDishes.length}</span>
@@ -355,6 +382,9 @@ export default function App() {
                     <img
                       src={fav.image}
                       alt={fav.name}
+                      loading="lazy"
+                      decoding="async"
+                      fetchPriority="low"
                       onError={(event) => { event.currentTarget.src = "https://placehold.co/96x96/f3f4f6/111827?text=Dish"; }}
                     />
                     <span>{fav.name}</span>
