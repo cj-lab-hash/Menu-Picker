@@ -152,23 +152,6 @@ function normalizeDish(dish) {
     steps: Array.isArray(dish.steps) ? dish.steps : String(dish.steps || "").split("\n").filter(Boolean),
   };
 }
-useEffect(() => {
-  if (!filteredDishes.length) return;
-
-  const nextIndex = (index + 1) % filteredDishes.length;
-  const nextImage = filteredDishes[nextIndex]?.image;
-
-  if (nextImage) {
-    const img = new Image();
-    img.src = nextImage;
-  }
-}, [index, filteredDishes]);
-
-const [imageLoaded, setImageLoaded] = useState(false);
-
-useEffect(() => {
-  setImageLoaded(false);
-}, [currentDish?.image]);
 
 export default function App() {
   const [dishes, setDishes] = useState(fallbackDishes);
@@ -211,8 +194,34 @@ export default function App() {
     });
   }, [dishes, query, category]);
 
-  const currentDish = filteredDishes[index % Math.max(filteredDishes.length, 1)] || filteredDishes[0];
-  const isFavorite = currentDish && favorites.some((f) => f.name === currentDish.name);
+const activeIndex = filteredDishes.length
+  ? index % filteredDishes.length
+  : 0;
+
+const currentDish = filteredDishes[activeIndex];
+
+const isFavorite =
+  currentDish && favorites.some((f) => f.name === currentDish.name);
+
+const [imageLoaded, setImageLoaded] = useState(false);
+
+// Reset image loading state whenever dish image changes
+useEffect(() => {
+  setImageLoaded(false);
+}, [currentDish?.image]);
+
+// Preload next dish image
+useEffect(() => {
+  if (!filteredDishes.length) return;
+
+  const nextIndex = (activeIndex + 1) % filteredDishes.length;
+  const nextImage = filteredDishes[nextIndex]?.image;
+
+  if (nextImage) {
+    const img = new Image();
+    img.src = nextImage;
+  }
+}, [activeIndex, filteredDishes]);
 
   useEffect(() => {
     setIndex(0);
@@ -323,18 +332,22 @@ export default function App() {
               </div>
           )}
             <img
-              src={currentDish.image}
-              alt={currentDish.name}
-              loading="eager"
-              decoding="async"
-              fetchPriority="high"
-              onError={(event) => { event.currentTarget.src = "https://placehold.co/900x600/f3f4f6/111827?text=Filipino+Dish"; }}
-          
-            />
+                  src={currentDish.image}
+                  alt={currentDish.name}
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
+                  onLoad={() => setImageLoaded(true)}
+                  onError={(event) => {
+                    event.currentTarget.src =
+                      "https://placehold.co/900x600/f3f4f6/111827?text=Filipino+Dish";
+                    setImageLoaded(true);
+                }}
+              />
 
             <div className="image-overlay">
               <span>{currentDish.category}</span>
-              <span>{index + 1} / {filteredDishes.length}</span>
+              <span>{activeIndex + 1} / {filteredDishes.length}</span>
             </div>
           </div>
 
