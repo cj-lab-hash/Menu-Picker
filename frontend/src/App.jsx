@@ -199,13 +199,13 @@ const activeIndex = filteredDishes.length
   : 0;
 
 const currentDish = filteredDishes[activeIndex];
-
+const totalDishes = dishes.length;
+const totalFilteredDishes = filteredDishes.length;
 const isFavorite =
   currentDish && favorites.some((f) => f.name === currentDish.name);
 
 const [imageLoaded, setImageLoaded] = useState(false);
 
-// Reset image loading state whenever dish image changes
 useEffect(() => {
   setImageLoaded(false);
 }, [currentDish?.image]);
@@ -347,7 +347,7 @@ useEffect(() => {
 
             <div className="image-overlay">
               <span>{currentDish.category}</span>
-              <span>{activeIndex + 1} / {filteredDishes.length}</span>
+              <span>{activeIndex + 1} / {filteredDishes.length} shown • {totalDishes} total</span>
             </div>
           </div>
 
